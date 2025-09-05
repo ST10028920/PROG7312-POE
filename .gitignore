@@ -1,0 +1,28 @@
+﻿# Build output
+bin/
+obj/
+
+# Visual Studio & temp
+.vs/
+*.user
+*.suo
+*.userprefs
+*.cache
+*.log
+
+# Publish/coverage/artifacts
+*.PublishSettings
+*.pubxml
+*.pubxml.user
+TestResult*/
+coverage*/
+
+# Node/npm (if ever added)
+node_modules/
+
+# App data
+appsettings.*.json
+
+# Uploaded files (keep folder, not files)
+wwwroot/uploads/*
+!wwwroot/uploads/.gitkeep

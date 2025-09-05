@@ -1,0 +1,381 @@
+﻿html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+/* ❌ removed: body { margin-bottom: 60px; }  */
+/* Footer must be in normal flow (not absolute/fixed from template bundles) */
+footer.footer {
+    position: static !important;
+    height: auto;
+    line-height: normal;
+}
+
+/* --- Subtle card hover lift --- */
+.card-animate {
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+    .card-animate:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+    }
+
+/* --- Fade-in on load (staggerable) --- */
+.fade-in {
+    opacity: 0;
+    animation: fadeInUp .5s ease-out forwards;
+    animation-delay: var(--delay, 0s);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Smooth progress bar width change --- */
+.progress .progress-bar {
+    transition: width .4s ease;
+}
+/* --- Progress glow when complete --- */
+.progress .progress-bar {
+    transition: width .4s ease, box-shadow .3s ease;
+}
+
+    .progress .progress-bar.glow {
+        box-shadow: 0 0 0 rgba(0,123,255,0);
+        animation: progressGlow .9s ease-out 1;
+    }
+
+@keyframes progressGlow {
+    0% {
+        box-shadow: 0 0 0 rgba(0,123,255,0);
+    }
+
+    30% {
+        box-shadow: 0 0 12px rgba(0,123,255,.65);
+    }
+
+    60% {
+        box-shadow: 0 0 18px rgba(0,123,255,.75);
+    }
+
+    100% {
+        box-shadow: 0 0 0 rgba(0,123,255,0);
+    }
+}
+
+/* --- Shake animation for invalid fields --- */
+@keyframes shakeX {
+    10%, 90% {
+        transform: translateX(-2px);
+    }
+
+    20%, 80% {
+        transform: translateX(4px);
+    }
+
+    30%, 50%, 70% {
+        transform: translateX(-6px);
+    }
+
+    40%, 60% {
+        transform: translateX(6px);
+    }
+}
+
+.shake {
+    animation: shakeX .45s ease-in-out;
+}
+
+/* Hero banner (clean gov-portal style) */
+.hero-wrap {
+    background: radial-gradient(1200px 600px at 10% -10%, rgba(13,110,253,.15), transparent 60%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border-bottom: 1px solid rgba(0,0,0,.06);
+}
+
+/* Crest visual */
+.hero-crest {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 220px;
+}
+
+.crest-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 48px;
+    background: rgba(255,255,255,.7);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.08);
+}
+
+.crest-ring {
+    position: absolute;
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    border: 2px dashed rgba(13,110,253,.25);
+    animation: ringPulse 6s linear infinite;
+}
+
+@keyframes ringPulse {
+    0% {
+        transform: rotate(0deg);
+        opacity: .9;
+    }
+
+    100% {
+        transform: rotate(360deg);
+        opacity: .9;
+    }
+}
+
+/* Icon in service cards */
+.service-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    background: rgba(13,110,253,.09);
+    border: 1px solid rgba(13,110,253,.15);
+}
+
+/* Glass cards */
+.card-glass {
+    background: rgba(255,255,255,.9);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0,0,0,.06);
+    box-shadow: 0 10px 24px rgba(0,0,0,.06);
+}
+
+.card-glass-muted {
+    background: rgba(248,249,250,.8);
+    backdrop-filter: blur(6px);
+    border: 1px dashed rgba(0,0,0,.08);
+}
+
+.card-animate {
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+    .card-animate:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.12);
+    }
+
+/* Duplicate fade-in (kept as-is) */
+.fade-in {
+    opacity: 0;
+    animation: fadeInUp .5s ease-out forwards;
+    animation-delay: var(--delay, 0s);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Text tweaks */
+.text-body-secondary {
+    color: rgba(33,37,41,.75) !important;
+}
+
+/* Navbar brand image tweaks */
+.navbar-brand img {
+    background: #fff;
+    border: 1px solid rgba(0,0,0,.1);
+}
+
+.navbar-brand img {
+    object-fit: cover;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,.1);
+}
+
+/* subtle government-blue navbar strip */
+.navbar {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    border-bottom: 1px solid rgba(0,0,0,.06);
+}
+
+    .navbar .nav-link:hover {
+        text-decoration: underline;
+    }
+
+.navbar-brand img {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,.1);
+    border-radius: 50%;
+}
+
+/* Create page visuals */
+.page-intro {
+    opacity: 0;
+    animation: fadeInUp .5s ease-out forwards;
+}
+
+    .page-intro .badge {
+        letter-spacing: .2px;
+    }
+
+#fileThumb {
+    box-shadow: 0 6px 18px rgba(0,0,0,.08);
+}
+
+/* Privacy Page */
+.page-intro {
+    opacity: 0;
+    animation: fadeInUp .5s ease-out forwards;
+}
+/* Floating + spinning privacy icon */
+.privacy-icon-spin {
+    display: inline-block;
+    animation: spin 12s linear infinite;
+    filter: drop-shadow(0 0 6px rgba(0,0,0,0.1));
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+
+    50% {
+        transform: rotate(180deg) scale(1.05);
+    }
+
+    100% {
+        transform: rotate(360deg) scale(1);
+    }
+}
+
+.privacy-icon-spin {
+    display: inline-block;
+    position: relative;
+    animation: spin 12s linear infinite;
+}
+
+    .privacy-icon-spin::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(0,123,255,0.2) 20%, transparent 70%);
+        transform: translate(-50%, -50%);
+        animation: pulse 3s ease-in-out infinite;
+        z-index: -1;
+    }
+
+@keyframes pulse {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: .6;
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 0.2;
+    }
+}
+
+/* Privacy hero visual (ring spins, icon stays upright) */
+.privacy-visual {
+    position: relative;
+    height: 200px;
+    display: grid;
+    place-items: center;
+}
+
+.privacy-ring {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    border-radius: 999px;
+    border: 2px dashed rgba(13,110,253,.25);
+    animation: pvSpin 10s linear infinite;
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,.06));
+}
+
+.privacy-icon {
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+    z-index: 1;
+    background: rgba(255,255,255,.75);
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.08);
+    padding: 14px;
+    animation: pvCounter 10s linear infinite; /* keeps icon upright feel */
+}
+
+@keyframes pvSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes pvCounter {
+    to {
+        transform: rotate(-360deg);
+    }
+}
+
+/* --------------------------------------
+   Thank You Confetti
+   -------------------------------------- */
+.confetti {
+    position: fixed;
+    top: -10px;
+    width: 8px;
+    height: 14px;
+    opacity: .9;
+    transform: rotate(15deg);
+    animation: confettiFall linear forwards;
+}
+
+@keyframes confettiFall {
+    to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}

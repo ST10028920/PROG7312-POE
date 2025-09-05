@@ -1,0 +1,103 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<!-- ============================= -->
+<!-- Hero / Masthead Section       -->
+<!-- ============================= -->
+<section class="hero-wrap mb-5">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="badge bg-primary-subtle text-primary fw-semibold mb-2">
+                    Municipal Services Portal
+                </span>
+                <h1 class="display-5 fw-bold mb-2">
+                    Report. Track. Stay Informed.
+                </h1>
+                <p class="lead text-body-secondary mb-3">
+                    A modern, citizen-first experience for municipal services.
+                    Log issues in minutes, receive clear feedback, and help keep our city running.
+                </p>
+                <ul class="list-inline text-body-secondary small mb-0">
+                    <li class="list-inline-item me-3">✔ Real-time feedback</li>
+                    <li class="list-inline-item me-3">✔ File uploads</li>
+                    <li class="list-inline-item">✔ Built for accessibility</li>
+                </ul>
+            </div>
+
+            <div class="col-lg-4 d-none d-lg-block">
+                <!-- Decorative crest / icon block -->
+                <div class="hero-crest">
+                    <div class="crest-circle">🛡️</div>
+                    <div class="crest-ring"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================= -->
+<!-- Services Grid Section         -->
+<!-- ============================= -->
+<div class="container">
+    <div class="row g-4">
+
+        <!-- Report Issues (active) -->
+        <div class="col-md-4 fade-in" style="--delay: 0s;">
+            <div class="card h-100 card-animate card-glass">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="service-icon me-2">🛠️</div>
+                        <h5 class="card-title mb-0">Report Issues</h5>
+                    </div>
+                    <p class="card-text text-body-secondary flex-grow-1">
+                        Log municipal problems with location, category, description, and optional attachment.
+                    </p>
+                    <div class="mt-2 d-flex align-items-center gap-2">
+                        <span class="badge rounded-pill text-bg-primary">Live</span>
+                    </div>
+                    <a asp-controller="Issues" asp-action="Create" class="btn btn-primary mt-3">Open</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Local Events & Announcements (coming soon) -->
+        <div class="col-md-4 fade-in" style="--delay: .08s;">
+            <div class="card h-100 card-animate card-glass-muted">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="service-icon me-2">📢</div>
+                        <h5 class="card-title mb-0">Local Events &amp; Announcements</h5>
+                    </div>
+                    <p class="card-text text-body-secondary flex-grow-1">
+                        Browse community updates, road works, and municipal notices.
+                    </p>
+                    <div class="mt-2 d-flex align-items-center gap-2">
+                        <span class="badge rounded-pill text-bg-secondary">Coming soon</span>
+                    </div>
+                    <button class="btn btn-secondary mt-3" disabled>Coming soon</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Request Status (coming soon) -->
+        <div class="col-md-4 fade-in" style="--delay: .16s;">
+            <div class="card h-100 card-animate card-glass-muted">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="service-icon me-2">📊</div>
+                        <h5 class="card-title mb-0">Service Request Status</h5>
+                    </div>
+                    <p class="card-text text-body-secondary flex-grow-1">
+                        Track your requests with clear status updates and reference numbers.
+                    </p>
+                    <div class="mt-2 d-flex align-items-center gap-2">
+                        <span class="badge rounded-pill text-bg-secondary">Coming soon</span>
+                    </div>
+                    <button class="btn btn-secondary mt-3" disabled>Coming soon</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

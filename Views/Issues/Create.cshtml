@@ -1,0 +1,277 @@
+﻿@model MunicipalServicesMVC.Models.IssueCreateVm
+@using MunicipalServicesMVC.Models
+
+@{
+    ViewData["Title"] = "Report an Issue";
+    var engagement = TempData["Engagement"] as string;
+}
+
+<!-- ============================= -->
+<!-- Page header                   -->
+<!-- ============================= -->
+<section class="page-intro fade-in mb-3">
+    <span class="badge bg-primary-subtle text-primary fw-semibold">Report Issues</span>
+    <h2 class="fw-bold mb-1">Help us keep the city running</h2>
+    <p class="text-body-secondary mb-0">
+        Log a problem in minutes. Clear feedback, optional attachment, instant reference.
+    </p>
+</section>
+
+@if (!string.IsNullOrWhiteSpace(engagement))
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        @engagement
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="mb-3">
+    <div class="progress" style="height:10px" aria-hidden="true">
+        <div id="progressBar" class="progress-bar" role="progressbar" style="width:0%"></div>
+    </div>
+    <small id="progressText" class="text-muted" aria-live="polite">Let’s get this report submitted…</small>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <form asp-action="Create" method="post" enctype="multipart/form-data" novalidate id="issueForm" class="fade-in">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <!-- Location -->
+            <div class="mb-3">
+                <label asp-for="Location" class="form-label">Location</label>
+                <div class="input-group">
+                    <span class="input-group-text" title="Location">📍</span>
+                    <input asp-for="Location"
+                           class="form-control"
+                           id="Location"
+                           maxlength="120"
+                           placeholder="Street or landmark"
+                           aria-describedby="locHelp" />
+                </div>
+                <small id="locHelp" class="text-muted">Street or landmark (max 120 chars)</small>
+                <span asp-validation-for="Location" class="text-danger"></span>
+            </div>
+
+            <!-- Category -->
+            <div class="mb-3">
+                <label asp-for="Category" class="form-label">Category</label>
+                <div class="input-group">
+                    <span class="input-group-text" title="Category">🏷️</span>
+                    <select asp-for="Category"
+                            class="form-select"
+                            id="Category"
+                            data-bs-toggle="tooltip"
+                            data-bs-title="Pick the closest match"
+                            asp-items="Html.GetEnumSelectList<IssueCategory>()">
+                        <option value="">-- Select a category --</option>
+                    </select>
+                </div>
+                <span asp-validation-for="Category" class="text-danger"></span>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-2">
+                <label asp-for="Description" class="form-label">Description</label>
+                <div class="input-group">
+                    <span class="input-group-text" title="Description">📝</span>
+                    <textarea asp-for="Description"
+                              class="form-control"
+                              rows="5"
+                              id="Description"
+                              maxlength="2000"
+                              placeholder="Explain what’s wrong & where"></textarea>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <small class="text-muted">Explain what’s wrong &amp; where.</small>
+                    <small class="text-muted"><span id="descCount">0</span>/2000</small>
+                </div>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <!-- Attachment -->
+            <div class="mb-3">
+                <label class="form-label" for="Attachment">Attach image or PDF (optional)</label>
+                <div class="input-group">
+                    <span class="input-group-text" title="Attachment">📎</span>
+                    <input asp-for="Attachment"
+                           type="file"
+                           class="form-control"
+                           id="Attachment"
+                           accept=".png,.jpg,.jpeg,.gif,.pdf" />
+                    <button type="button" class="btn btn-outline-danger" id="ClearAttachment" title="Remove file">✕</button>
+                </div>
+                <small class="text-muted">Allowed: .png .jpg .jpeg .gif .pdf</small>
+                <div id="fileMeta" class="form-text text-muted mt-1 d-none"></div>
+                <img id="fileThumb" class="img-thumbnail mt-2 d-none" style="max-width:160px;" alt="Preview" />
+                <span asp-validation-for="Attachment" class="text-danger"></span>
+            </div>
+
+            <button id="submitBtn" type="submit" class="btn btn-primary">Submit</button>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary ms-2">Back to Main Menu</a>
+        </form>
+    </div>
+
+    <!-- Helpful tips / assurance -->
+    <div class="col-lg-4">
+        <div class="card h-100 fade-in" style="--delay:.08s">
+            <div class="card-body">
+                <h6 class="fw-semibold mb-2">Tips for a great report</h6>
+                <ul class="small text-body-secondary mb-3 ps-3">
+                    <li>Add a landmark (e.g., “near Pine &amp; 5th”).</li>
+                    <li>Choose the closest category.</li>
+                    <li>Attach a clear photo if possible.</li>
+                </ul>
+                <div class="alert alert-secondary py-2 small mb-0">
+                    ✅ You’ll get a unique reference on submission.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Bootstrap tooltip
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+
+        const required = ["Location","Category","Description"];
+        const optional = ["Attachment"];
+
+        function isFilled(el) {
+            if (!el) return false;
+            if (el.tagName === "SELECT") return !!el.value;
+            if (el.type === "file") return el.files && el.files.length > 0;
+            return !!(el.value && el.value.trim().length > 0);
+        }
+
+        function updateProgress(){
+            let reqFilled = 0;
+            for (const id of required){
+                const el = document.getElementById(id);
+                if (isFilled(el)) reqFilled++;
+            }
+
+            let optFilled = 0;
+            for (const id of optional){
+                const el = document.getElementById(id);
+                if (isFilled(el)) optFilled++;
+            }
+
+            const totalSteps = required.length + optional.length;
+            const filledSteps = reqFilled + optFilled;
+            const pct = Math.round((filledSteps / totalSteps) * 100);
+
+            const bar = document.getElementById("progressBar");
+            const text = document.getElementById("progressText");
+
+            bar.style.width = pct + "%";
+            bar.classList.remove("glow");
+
+            if (reqFilled < required.length) {
+                text.innerText = `Progress: ${pct}%`;
+            } else if (reqFilled === required.length && optFilled === 0) {
+                text.innerText = "Ready to submit — attachment optional";
+            } else {
+                text.innerText = "Great! Ready with attachment ✅";
+                void bar.offsetWidth; // restart animation
+                bar.classList.add("glow");
+            }
+        }
+
+        // Listeners
+        [...required, ...optional].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener("input", updateProgress);
+            el.addEventListener("change", updateProgress);
+        });
+
+        // Clear file input
+        const clearBtn = document.getElementById("ClearAttachment");
+        if (clearBtn) {
+            clearBtn.addEventListener("click", () => {
+                const fileInput = document.getElementById("Attachment");
+                const fileMeta = document.getElementById("fileMeta");
+                const fileThumb = document.getElementById("fileThumb");
+                if (fileInput) {
+                    fileInput.value = "";
+                    fileMeta.classList.add("d-none"); fileMeta.innerText = "";
+                    fileThumb.classList.add("d-none"); fileThumb.src = "";
+                    updateProgress();
+                }
+            });
+        }
+
+        // Live description counter
+        const desc = document.getElementById("Description");
+        const descCount = document.getElementById("descCount");
+        if (desc && descCount) {
+            const updateDescCount = () => descCount.innerText = (desc.value || "").length;
+            desc.addEventListener("input", updateDescCount);
+            updateDescCount();
+        }
+
+        // File preview / meta
+        const fileInput = document.getElementById("Attachment");
+        const fileMeta = document.getElementById("fileMeta");
+        const fileThumb = document.getElementById("fileThumb");
+        if (fileInput) {
+            fileInput.addEventListener("change", () => {
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    fileMeta.classList.add("d-none"); fileThumb.classList.add("d-none");
+                    return;
+                }
+                const f = fileInput.files[0];
+                const kb = Math.round(f.size / 1024);
+                fileMeta.innerText = `${f.name} • ${kb} KB`;
+                fileMeta.classList.remove("d-none");
+
+                if (f.type.startsWith("image/")) {
+                    const reader = new FileReader();
+                    reader.onload = e => { fileThumb.src = e.target.result; fileThumb.classList.remove("d-none"); };
+                    reader.readAsDataURL(f);
+                } else {
+                    fileThumb.classList.add("d-none");
+                }
+            });
+        }
+
+        // Submit loading state (only if valid)
+        $(function () {
+            $("form#issueForm").on("submit", function () {
+                if (!$(this).valid()) return; // jQuery validate
+                const btn = document.getElementById("submitBtn");
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting…';
+                }
+            });
+
+            // Shake invalid fields on failed submit
+            $("form#issueForm").on("invalid-form.validate", function (e, validator) {
+                if (!validator || !validator.errorList) return;
+
+                const first = validator.errorList[0]?.element;
+                if (first && first.scrollIntoView) {
+                    first.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+
+                validator.errorList.forEach(function (err) {
+                    const el = err.element;
+                    el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake");
+                });
+            });
+
+            document.querySelectorAll("input, select, textarea").forEach(function (el) {
+                el.addEventListener("animationend", function () {
+                    el.classList.remove("shake");
+                });
+            });
+        });
+
+        // Initial paint
+        updateProgress();
+    </script>
+}
