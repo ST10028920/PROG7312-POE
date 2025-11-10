@@ -70,6 +70,26 @@
                 <span asp-validation-for="Category" class="text-danger"></span>
             </div>
 
+            <!-- Priority -->
+            <div class="mb-3">
+                <label asp-for="Priority" class="form-label">Priority (1 = High, 5 = Low)</label>
+                <div class="input-group">
+                    <span class="input-group-text" title="Priority">⚠️</span>
+                    <input asp-for="Priority"
+                           class="form-control"
+                           id="Priority"
+                           type="number"
+                           min="1"
+                           max="5"
+                           value="3"
+                           aria-describedby="priorityHelp" />
+                </div>
+                <small id="priorityHelp" class="text-muted">
+                    Use 1 for critical/safety issues, 3 for normal requests, 5 for minor issues.
+                </small>
+                <span asp-validation-for="Priority" class="text-danger"></span>
+            </div>
+
             <!-- Description -->
             <div class="mb-2">
                 <label asp-for="Description" class="form-label">Description</label>
@@ -136,7 +156,8 @@
         // Bootstrap tooltip
         document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
 
-        const required = ["Location","Category","Description"];
+        // Location, Category, Priority, Description are required for progress
+        const required = ["Location","Category","Priority","Description"];
         const optional = ["Attachment"];
 
         function isFilled(el) {

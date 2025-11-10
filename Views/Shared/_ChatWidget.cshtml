@@ -1,0 +1,207 @@
+﻿@* Views/Shared/_ChatWidget.cshtml *@
+
+<!-- Floating chat button -->
+<div id="chat-toggle" class="cw-toggle" title="Chat with us">💬</div>
+
+<!-- Chat window -->
+<div id="chat-box" class="cw-box" aria-live="polite">
+    <div class="cw-header">
+        <span>Municipal Helper Chatbot</span>
+        <div class="cw-actions">
+            <button id="cw-min" type="button" title="Minimize">−</button>
+            <button id="cw-close" type="button" title="Close">×</button>
+        </div>
+    </div>
+
+    <div id="chat-window" class="cw-window">
+        <div class="cw-msg cw-msg-bot">
+            <div class="cw-bubble cw-bot">
+                <span class="badge bg-secondary me-1">Assistant</span>
+                Hi! How can I help you today?
+            </div>
+        </div>
+    </div>
+
+    <div class="cw-inputbar">
+        <button id="attach-btn" class="cw-send" type="button" title="Attach file">📎</button>
+        <input id="file-input" type="file" accept="image/*" style="display:none" />
+        <input id="user-input" type="text" class="cw-input" placeholder="Type a message…" autocomplete="off" />
+        <button id="send-btn" class="cw-send btn btn-primary" type="button">Send</button>
+    </div>
+</div>
+
+<script>
+    (() => {
+        // Stop double-init if partial is rendered more than once
+        if (window.__chatWidgetInit) return;
+        window.__chatWidgetInit = true;
+
+        const toggle = document.getElementById("chat-toggle");
+        const box = document.getElementById("chat-box");
+        const chatWindow = document.getElementById("chat-window");
+        const userInput = document.getElementById("user-input");
+        const sendBtn = document.getElementById("send-btn");
+        const btnMin = document.getElementById("cw-min");
+        const btnClose = document.getElementById("cw-close");
+        const attachBtn = document.getElementById("attach-btn");
+        const fileInput = document.getElementById("file-input");
+
+        // ---------- Helpers ----------
+
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        function openBox() {
+            box.style.display = "flex";
+            requestAnimationFrame(() => box.classList.add("cw-open"));
+            userInput.focus();
+        }
+
+        function closeBox() {
+            box.classList.remove("cw-open");
+            setTimeout(() => {
+                box.style.display = "none";
+            }, 180);
+        }
+
+        function toggleBox() {
+            if (box.style.display === "none" || !box.style.display) {
+                openBox();
+            } else {
+                closeBox();
+            }
+        }
+
+        // Render a message bubble
+        function append(prefix, text, you = false) {
+            const row = document.createElement("div");
+            row.className = "cw-msg " + (you ? "cw-msg-you" : "cw-msg-bot");
+
+            const bubble = document.createElement("div");
+            bubble.className = "cw-bubble " + (you ? "cw-you" : "cw-bot");
+
+            let htmlText = text ?? "";
+
+            // Convert [[...]] tokens into quick-reply buttons
+            htmlText = htmlText.replace(/\[\[(.+?)\]\]/g, (_m, label) => {
+                return `<button class="cw-quick" type="button">${label}</button>`;
+            });
+
+            if (you) {
+                bubble.innerHTML =
+                    `<span class="badge bg-primary me-1">You</span> ` +
+                    escapeHtml(htmlText);
+            } else {
+                bubble.innerHTML =
+                    `<span class="badge bg-secondary me-1">Assistant</span> ` +
+                    htmlText; // bot text is HTML coming from server
+            }
+
+            row.appendChild(bubble);
+            chatWindow.appendChild(row);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            // Wire quick buttons
+            bubble.querySelectorAll(".cw-quick").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    quickSend(btn.innerText);
+                });
+            });
+
+            return text || "";
+        }
+
+        function quickSend(text) {
+            if (!text) return;
+            userInput.value = text;
+            sendMessage();
+        }
+
+        function maybeInjectSmartButtons(botText) {
+            const t = (botText || "").toLowerCase();
+
+            if (t.includes("confirm submission?")) {
+                append("", "[[submit]] [[cancel]]");
+            }
+
+            if (t.includes("optional: attach a photo") || t.includes("optional: attach a **photo**")) {
+                append("", "[[skip]]");
+            }
+        }
+
+        // ---------- Core chat send ----------
+
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            append("You", text, true);
+            userInput.value = "";
+
+            try {
+                const r = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text })
+                });
+
+                if (!r.ok) {
+                    append("Bot", "Sorry, something went wrong.", false);
+                    return;
+                }
+
+                const d = await r.json();
+
+                // Matches ChatApiController: replyHtml + navigateUrl (camel-cased by JSON serializer)
+                const botText = append("Bot", d.replyHtml || "…", false);
+
+                if (d.navigateUrl) {
+                    // small delay so the user sees the response before navigation
+                    setTimeout(() => {
+                        window.location.href = d.navigateUrl;
+                    }, 600);
+                }
+
+                maybeInjectSmartButtons(botText);
+            } catch (err) {
+                append("Bot", "Sorry, I couldn’t reach the server.", false);
+            }
+        }
+
+        // ---------- File attach (placeholder so it doesn't break) ----------
+
+        attachBtn.addEventListener("click", () => {
+            // For now, just guide the user instead of doing a broken upload call
+            append("Bot",
+                "File uploads are supported on the <strong>Report Issues</strong> page. " +
+                "This chat widget only supports text in this version.",
+                false);
+        });
+
+        // ---------- Wiring ----------
+
+        toggle.addEventListener("click", toggleBox);
+        btnMin.addEventListener("click", closeBox);
+        btnClose.addEventListener("click", closeBox);
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+                closeBox();
+            }
+        });
+
+        sendBtn.addEventListener("click", sendMessage);
+        userInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    })();
+</script>

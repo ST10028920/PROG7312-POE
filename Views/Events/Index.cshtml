@@ -1,0 +1,188 @@
+﻿@using System.Linq
+@model IEnumerable<MunicipalServicesMVC.Models.Event>
+
+@{
+    ViewData["Title"] = "Local Events & Announcements";
+    var categories = (IEnumerable<string>)(ViewBag.Categories ?? new List<string>());
+    var currentCategory = ViewBag.Category as string ?? "";
+    var currentDate = ViewBag.Date as string ?? "";
+    var currentSort = ViewBag.CurrentSort as string ?? "";
+    var recommended = ViewBag.Recommended as IEnumerable<MunicipalServicesMVC.Models.Event>
+                      ?? new List<MunicipalServicesMVC.Models.Event>();
+}
+
+@functions {
+    private string GetCategoryBadge(string category)
+    {
+        switch ((category ?? "").ToLowerInvariant())
+        {
+            case "utilities": return "bg-primary";
+            case "community": return "bg-success";
+            case "roads": return "bg-warning text-dark";
+            case "sanitation": return "bg-danger";
+            case "other": return "bg-secondary";
+            default: return "bg-dark";
+        }
+    }
+
+    private string GetCategoryIcon(string category)
+    {
+        switch ((category ?? "").ToLowerInvariant())
+        {
+            case "utilities": return "bi bi-lightning-fill";
+            case "community": return "bi bi-people-fill";
+            case "roads": return "bi bi-signpost-split-fill";
+            case "sanitation": return "bi bi-trash-fill";
+            case "other": return "bi bi-info-circle-fill";
+            default: return "bi bi-info-circle-fill";
+        }
+    }
+}
+
+<!-- Search + Sort form -->
+<form method="get" asp-controller="Events" asp-action="Index" class="mb-3">
+    <div class="row g-2 align-items-end">
+        <div class="col-sm-6 col-md-3">
+            <label for="category" class="form-label">Category</label>
+            <select id="category" name="category" class="form-select">
+                <option value="">All categories</option>
+                @foreach (var c in categories)
+                {
+                    if (currentCategory.Equals(c, StringComparison.OrdinalIgnoreCase))
+                    {
+                        <option value="@c" selected>@c</option>
+                    }
+                    else
+                    {
+                        <option value="@c">@c</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="col-sm-6 col-md-3">
+            <label for="date" class="form-label">Date</label>
+            <input id="date" name="date" type="date" class="form-control" value="@currentDate" />
+        </div>
+
+        <div class="col-sm-6 col-md-3">
+            <label for="sort" class="form-label">Sort</label>
+            <select id="sort" name="sort" class="form-select">
+                @if (currentSort == "date_asc")
+                {
+                    <option value="date_asc" selected>Date ↑ (soonest first)</option>
+                }
+                else
+                {
+                    <option value="date_asc">Date ↑ (soonest first)</option>
+                }
+
+                @if (currentSort == "date_desc")
+                {
+                    <option value="date_desc" selected>Date ↓ (latest first)</option>
+                }
+                else
+                {
+                    <option value="date_desc">Date ↓ (latest first)</option>
+                }
+
+                @if (currentSort == "title_asc")
+                {
+                    <option value="title_asc" selected>Title A → Z</option>
+                }
+                else
+                {
+                    <option value="title_asc">Title A → Z</option>
+                }
+
+                @if (currentSort == "category_asc")
+                {
+                    <option value="category_asc" selected>Category → Date</option>
+                }
+                else
+                {
+                    <option value="category_asc">Category → Date</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary mt-4">Search</button>
+        </div>
+    </div>
+</form>
+
+@if (!string.IsNullOrWhiteSpace(currentCategory) || !string.IsNullOrWhiteSpace(currentDate))
+{
+    <div class="alert alert-info">
+        <strong>Filters applied</strong>
+        @if (!string.IsNullOrWhiteSpace(currentCategory))
+        {
+            <span class="ms-2">Category: @currentCategory</span>
+        }
+        @if (!string.IsNullOrWhiteSpace(currentDate))
+        {
+            <span class="ms-2">Date: @currentDate</span>
+        }
+    </div>
+}
+
+@if (recommended.Any())
+{
+    <h4>Recommended for you</h4>
+    <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+        @foreach (var e in recommended)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm card-raise animate-once is-visible">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            @e.Title
+                            <span class="badge @GetCategoryBadge(e.Category) badge-soft">
+                                <i class="@GetCategoryIcon(e.Category) me-1"></i>@e.Category
+                            </span>
+                        </h5>
+                        <h6 class="card-subtitle text-muted">
+                            @e.Date.ToString("dd MMM yyyy") @(e.Time.HasValue ? $"at {e.Time}" : "")
+                        </h6>
+                        <p class="mt-2"><strong>Location:</strong> @e.Location</p>
+                        <p>@e.Description</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<h2>Local Events & Announcements</h2>
+<p>This page will show events and announcements here soon.</p>
+
+@if (!(Model?.Any() ?? false))
+{
+    <div class="alert alert-info mt-3">No events found. Try clearing filters.</div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 g-3 mt-3">
+        @foreach (var e in Model)
+        {
+            <div class="col">
+                <div class="card h-100 border-primary card-raise animate-once is-visible">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            @e.Title
+                            <span class="badge @GetCategoryBadge(e.Category) badge-soft">
+                                <i class="@GetCategoryIcon(e.Category) me-1"></i>@e.Category
+                            </span>
+                        </h5>
+                        <h6 class="card-subtitle text-muted">
+                            @e.Date.ToString("dd MMM yyyy") @(e.Time.HasValue ? $"at {e.Time}" : "")
+                        </h6>
+                        <p class="mt-2"><strong>Location:</strong> @e.Location</p>
+                        <p>@e.Description</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

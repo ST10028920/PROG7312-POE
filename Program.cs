@@ -1,10 +1,28 @@
 ﻿using MunicipalServicesMVC.Models;
+using MunicipalServicesMVC.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddSingleton<IssueStore>();  // ✅
+builder.Services.AddSingleton<IEventCatalog, InMemoryEventCatalog>();
 
+// ✅ Required for Session
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.Cookie.Name = ".Chat.Session";
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// ✅ Chatbot services (fully qualified to avoid using/namespace issues)
+builder.Services.AddSingleton<MunicipalServicesMVC.Services.Chatbot.FaqService>();
+builder.Services.AddSingleton<MunicipalServicesMVC.Services.Chatbot.IssueService>();
+
+// Your existing singleton
+builder.Services.AddSingleton<IssueStore>();  // ✅
 
 var app = builder.Build();
 
@@ -20,6 +38,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// ✅ Must be BEFORE Authorization
+app.UseSession();
 
 app.UseAuthorization();
 

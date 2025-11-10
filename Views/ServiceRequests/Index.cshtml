@@ -1,0 +1,143 @@
+﻿@model MunicipalServicesMVC.Services.ServiceRequestIndex
+
+@{
+    ViewData["Title"] = "Service Request Status";
+
+    // Use the heap to get the highest-priority issues (1 = highest).
+    var topIssues = Model.GetTopPriorityIssues(3).ToList();
+
+    // Use the graph (BFS) to get an inspection route between locations.
+    var routeEdges = Model.GetInspectionRoute().ToList();
+}
+
+<h1 class="mb-3">Service Request Status</h1>
+
+<form asp-action="Search" method="post" class="mb-4 d-flex gap-2">
+    <input type="text" name="referenceId" class="form-control" placeholder="Enter Reference ID (e.g., 66BC7935)" />
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-info">@ViewBag.Message</div>
+}
+
+@if (Model.Issues.Count == 0)
+{
+    <p>No service requests have been submitted yet.</p>
+}
+else
+{
+    <!-- Main table: all issues ordered by BST -->
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Reference ID</th>
+                <th>Category</th>
+                <th>Location</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var issue in Model.GetIssuesOrderedById())
+            {
+                <tr>
+                    <td>
+                        @{
+                            // Short reference code (first 8 chars, uppercase)
+                            string displayId = issue.Id != null && issue.Id.Length >= 8
+                            ? issue.Id.Substring(0, 8).ToUpperInvariant()
+                            : issue.Id ?? "";
+                        }
+                        @displayId
+                    </td>
+                    <td>@issue.Category</td>
+                    <td>@issue.Location</td>
+                    <td>@issue.Description</td>
+                    <td>@issue.Status</td>
+                    <td>@issue.Priority</td>
+                    <td>@issue.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<hr class="my-5" />
+
+<h4 class="fw-bold mb-3 text-danger">🔺 Top Priority Requests</h4>
+
+@if (!topIssues.Any())
+{
+    <p class="text-body-secondary">No priority issues available.</p>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Reference ID</th>
+                <th>Category</th>
+                <th>Location</th>
+                <th>Priority</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var issue in topIssues)
+            {
+                <tr>
+                    <td>
+                        @{
+                            string displayId = issue.Id != null && issue.Id.Length >= 8
+                            ? issue.Id.Substring(0, 8).ToUpperInvariant()
+                            : issue.Id ?? "";
+                        }
+                        @displayId
+                    </td>
+                    <td>@issue.Category</td>
+                    <td>@issue.Location</td>
+                    <td>@issue.Priority</td>
+                    <td>@issue.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<hr class="my-5" />
+
+<h4 class="fw-bold mb-3">🕸️ Inspection Route Between Locations</h4>
+<p class="text-body-secondary">
+    This route is generated from the <strong>location graph</strong> using a
+    <strong>Breadth-First Search (BFS)</strong> spanning tree. It shows a possible order
+    in which an inspector could visit areas with active service requests.
+</p>
+
+@if (!routeEdges.Any())
+{
+    <p class="text-body-secondary">No route available yet. Submit issues with locations first.</p>
+}
+else
+{
+    <table class="table table-sm table-hover">
+        <thead>
+            <tr>
+                <th>From Location</th>
+                <th>To Location</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var step in routeEdges)
+            {
+                <tr>
+                    <td>@step.From</td>
+                    <td>@step.To</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

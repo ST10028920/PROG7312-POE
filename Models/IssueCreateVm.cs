@@ -1,34 +1,24 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
 
-namespace MunicipalServicesMVC.Models;
-
-/// <summary>
-/// View model used when creating a new issue report.
-/// </summary>
-public sealed class IssueCreateVm
+namespace MunicipalServicesMVC.Models
 {
-    /// <summary>
-    /// Location where the issue is observed.
-    /// </summary>
-    [Required, StringLength(120)]
-    public string Location { get; set; } = string.Empty;
+    public sealed class IssueCreateVm
+    {
+        [Required(ErrorMessage = "Please enter a location.")]
+        [StringLength(120)]
+        public string Location { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Category of the issue being reported.
-    /// Nullable to allow proper model validation binding.
-    /// </summary>
-    [Required]
-    public IssueCategory? Category { get; set; }
+        [Required(ErrorMessage = "Please select a category.")]
+        public IssueCategory? Category { get; set; } // nullable now
 
-    /// <summary>
-    /// Detailed description of the issue.
-    /// </summary>
-    [Required, StringLength(2000)]
-    public string Description { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Please select a priority level (1–5).")]
+        [Range(1, 5, ErrorMessage = "Priority must be between 1 and 5.")]
+        public int? Priority { get; set; } // nullable now
 
-    /// <summary>
-    /// Optional file upload (e.g., photo evidence).
-    /// </summary>
-    public IFormFile? Attachment { get; set; }
+        [Required(ErrorMessage = "Please describe the issue.")]
+        [StringLength(2000)]
+        public string Description { get; set; } = string.Empty;
+
+        public IFormFile? Attachment { get; set; }
+    }
 }

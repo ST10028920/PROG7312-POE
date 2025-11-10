@@ -1,0 +1,97 @@
+﻿@{
+    ViewData["Title"] = "Assistant";
+}
+
+<div class="container py-4" style="max-width:720px">
+    <h3 class="mb-3">City Assistant 🤖</h3>
+
+    <p class="text-muted">
+        Ask me about events, reporting issues, or type <strong>help</strong> to see what I can do.
+    </p>
+
+    <div id="log" class="border rounded p-3 mb-3" style="height:360px; overflow:auto;">
+        <div class="mb-2">
+            <span class="badge bg-secondary me-1">Assistant</span>
+            Hi! Type <strong>help</strong> to see what I can do.
+        </div>
+    </div>
+
+    <form id="chatForm" class="d-flex gap-2">
+        <input id="text"
+               class="form-control"
+               autocomplete="off"
+               placeholder="Try: open events, search community on 2025-10-10, sort by date…" />
+        <button class="btn btn-primary" type="submit">Send</button>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const log = document.getElementById('log');
+            const form = document.getElementById('chatForm');
+            const input = document.getElementById('text');
+
+            function escapeHtml(str) {
+                return str
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#39;");
+            }
+
+            function addLine(html, from) {
+                const d = document.createElement('div');
+                d.classList.add('mb-2');
+
+                if (from === 'me') {
+                    d.classList.add('text-end');
+                    d.innerHTML =
+                        '<span class="badge bg-primary me-1">You</span> ' +
+                        escapeHtml(html);
+                } else {
+                    d.innerHTML =
+                        '<span class="badge bg-secondary me-1">Assistant</span> ' +
+                        html; // replyHtml is already HTML from the server
+                }
+
+                log.appendChild(d);
+                log.scrollTop = log.scrollHeight;
+            }
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const text = input.value.trim();
+                if (!text) return;
+
+                addLine(text, 'me');
+                input.value = '';
+
+                try {
+                    const res = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text })
+                    });
+
+                    if (!res.ok) {
+                        addLine('Sorry, something went wrong talking to the assistant.', 'bot');
+                        return;
+                    }
+
+                    const data = await res.json();
+
+                    addLine(data.replyHtml || '…', 'bot');
+
+                    if (data.navigateUrl) {
+                        // small delay so the user sees the response
+                        setTimeout(() => window.location.href = data.navigateUrl, 600);
+                    }
+                } catch (err) {
+                    addLine('Sorry, I could not reach the server.', 'bot');
+                }
+            });
+        })();
+    </script>
+}

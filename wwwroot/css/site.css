@@ -54,11 +54,7 @@ footer.footer {
     }
 }
 
-/* --- Smooth progress bar width change --- */
-.progress .progress-bar {
-    transition: width .4s ease;
-}
-/* --- Progress glow when complete --- */
+/* --- Smooth progress bar width change + glow --- */
 .progress .progress-bar {
     transition: width .4s ease, box-shadow .3s ease;
 }
@@ -182,71 +178,7 @@ footer.footer {
     border: 1px dashed rgba(0,0,0,.08);
 }
 
-.card-animate {
-    transition: transform .25s ease, box-shadow .25s ease;
-}
-
-    .card-animate:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.12);
-    }
-
-/* Duplicate fade-in (kept as-is) */
-.fade-in {
-    opacity: 0;
-    animation: fadeInUp .5s ease-out forwards;
-    animation-delay: var(--delay, 0s);
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Text tweaks */
-.text-body-secondary {
-    color: rgba(33,37,41,.75) !important;
-}
-
-/* Navbar brand image tweaks */
-.navbar-brand img {
-    background: #fff;
-    border: 1px solid rgba(0,0,0,.1);
-}
-
-.navbar-brand img {
-    object-fit: cover;
-    background: #fff;
-    border: 1px solid rgba(0,0,0,.1);
-}
-
-/* subtle government-blue navbar strip */
-.navbar {
-    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-    border-bottom: 1px solid rgba(0,0,0,.06);
-}
-
-    .navbar .nav-link:hover {
-        text-decoration: underline;
-    }
-
-.navbar-brand img {
-    width: 32px;
-    height: 32px;
-    object-fit: cover;
-    background: #fff;
-    border: 1px solid rgba(0,0,0,.1);
-    border-radius: 50%;
-}
-
-/* Create page visuals */
+/* Duplicate fade-in (kept as-is, harmless) */
 .page-intro {
     opacity: 0;
     animation: fadeInUp .5s ease-out forwards;
@@ -261,13 +193,9 @@ footer.footer {
 }
 
 /* Privacy Page */
-.page-intro {
-    opacity: 0;
-    animation: fadeInUp .5s ease-out forwards;
-}
-/* Floating + spinning privacy icon */
 .privacy-icon-spin {
     display: inline-block;
+    position: relative;
     animation: spin 12s linear infinite;
     filter: drop-shadow(0 0 6px rgba(0,0,0,0.1));
 }
@@ -286,25 +214,19 @@ footer.footer {
     }
 }
 
-.privacy-icon-spin {
-    display: inline-block;
-    position: relative;
-    animation: spin 12s linear infinite;
+.privacy-icon-spin::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,123,255,0.2) 20%, transparent 70%);
+    transform: translate(-50%, -50%);
+    animation: pulse 3s ease-in-out infinite;
+    z-index: -1;
 }
-
-    .privacy-icon-spin::before {
-        content: "";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(0,123,255,0.2) 20%, transparent 70%);
-        transform: translate(-50%, -50%);
-        animation: pulse 3s ease-in-out infinite;
-        z-index: -1;
-    }
 
 @keyframes pulse {
     0%, 100% {
@@ -362,7 +284,7 @@ footer.footer {
 
 /* --------------------------------------
    Thank You Confetti
-   -------------------------------------- */
+--------------------------------------- */
 .confetti {
     position: fixed;
     top: -10px;
@@ -378,4 +300,273 @@ footer.footer {
         transform: translateY(100vh) rotate(360deg);
         opacity: 0;
     }
+}
+
+/* =========================================================
+   CHAT WIDGET STYLES (moved from _ChatWidget.cshtml)
+========================================================= */
+
+/* Toggle button */
+.cw-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0d6efd;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    z-index: 9999;
+    transition: transform .15s ease, box-shadow .2s ease;
+}
+
+    .cw-toggle:active {
+        transform: scale(.96);
+        box-shadow: 0 6px 18px rgba(0,0,0,.25);
+    }
+
+/* Main box & layout */
+.cw-box {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 340px;
+    height: 440px;
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0,0,0,.28);
+    z-index: 9999;
+    display: none;
+    flex-direction: column;
+    transform-origin: bottom right;
+    transform: scale(.96) translateY(8px);
+    opacity: 0;
+    transition: opacity .18s ease, transform .18s ease;
+    border: 1px solid rgba(0,0,0,.08);
+}
+
+    .cw-box.cw-open {
+        display: flex;
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+
+.cw-header {
+    background: #0d6efd;
+    color: #fff;
+    padding: 10px 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+    .cw-header .cw-actions button {
+        background: transparent;
+        border: 0;
+        color: #fff;
+        cursor: pointer;
+        padding: 2px 6px;
+        font-size: 18px;
+        line-height: 1;
+    }
+
+.cw-window {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+    background: #f7f7f9;
+}
+
+.cw-inputbar {
+    display: flex;
+    gap: 6px;
+    padding: 10px;
+    border-top: 1px solid rgba(0,0,0,.08);
+    background: #fff;
+}
+
+.cw-input {
+    flex: 1;
+    font-size: 14px;
+    border-radius: 10px;
+    padding: 8px 10px;
+    border: 1px solid rgba(0,0,0,.15);
+}
+
+.cw-send {
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 10px;
+    background: #0d6efd;
+    color: #fff;
+}
+
+/* Messages & bubbles */
+.cw-msg {
+    margin: 6px 0;
+    display: flex;
+}
+
+.cw-msg-bot {
+    justify-content: flex-start;
+}
+
+.cw-msg-you {
+    justify-content: flex-end;
+}
+
+.cw-bubble {
+    max-width: 80%;
+    padding: 8px 10px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.08);
+    font-size: 14px;
+    line-height: 1.3;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.cw-bot {
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,.08);
+}
+
+.cw-you {
+    background: #e7f1ff;
+    border: 1px solid rgba(13,110,253,.25);
+}
+
+/* Quick-reply buttons */
+.cw-quick {
+    background: #0d6efd;
+    border: none;
+    color: #fff;
+    border-radius: 6px;
+    padding: 4px 8px;
+    margin: 3px 6px 0 0;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+    .cw-quick:hover {
+        background: #0b5ed7;
+    }
+
+/* Typing indicator */
+.cw-typing {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin: 6px 0;
+}
+
+.cw-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #9aa3af;
+    opacity: .6;
+    animation: cw-bounce 1s infinite ease-in-out;
+}
+
+    .cw-dot:nth-child(2) {
+        animation-delay: .15s
+    }
+
+    .cw-dot:nth-child(3) {
+        animation-delay: .3s
+    }
+
+@keyframes cw-bounce {
+    0%,80%,100% {
+        transform: translateY(0)
+    }
+
+    40% {
+        transform: translateY(-4px)
+    }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+    .cw-box {
+        background: #111317;
+        border-color: rgba(255,255,255,.08);
+    }
+
+    .cw-window {
+        background: #0c0e12;
+    }
+
+    .cw-inputbar {
+        background: #111317;
+        border-top-color: rgba(255,255,255,.08);
+    }
+
+    .cw-bot {
+        background: #171a21;
+        border-color: rgba(255,255,255,.06);
+        color: #e6e6ea;
+    }
+
+    .cw-you {
+        background: #0f2546;
+        border-color: rgba(13,110,253,.35);
+        color: #e6eefc;
+    }
+
+    .cw-quick {
+        background: #1864d8;
+    }
+
+        .cw-quick:hover {
+            background: #1453b3;
+        }
+}
+/* === Events page animations === */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-once {
+    opacity: 0; /* hidden until revealed by JS */
+    transform: translateY(8px);
+    will-change: transform, opacity;
+    transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+    .animate-once.is-visible {
+        animation: fadeUp 360ms ease-out forwards;
+    }
+
+/* Subtle hover lift for cards */
+.card.card-raise {
+    transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+    .card.card-raise:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.08);
+    }
+
+/* Optional: badge pop on hover (very subtle) */
+.badge.badge-soft:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    transition: transform 160ms ease, filter 160ms ease;
 }

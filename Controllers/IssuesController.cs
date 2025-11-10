@@ -1,6 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using MunicipalServicesMVC.Models;
-using MunicipalServicesMVC.Models;
+using MunicipalServicesMVC.Services;
 
 namespace MunicipalServicesMVC.Controllers
 {
@@ -8,18 +13,25 @@ namespace MunicipalServicesMVC.Controllers
     {
         private readonly IssueStore _store;
         private readonly IWebHostEnvironment _env;
+        private readonly ILogger<IssuesController> _logger;
 
-        public IssuesController(IssueStore store, IWebHostEnvironment env)
+        public IssuesController(
+            IssueStore store,
+            IWebHostEnvironment env,
+            ILogger<IssuesController> logger)
         {
             _store = store;
             _env = env;
+            _logger = logger;
         }
 
         // GET: /Issues/Create
         [HttpGet]
         public IActionResult Create()
         {
-            return View(new IssueCreateVm());
+            // Fresh, empty view model – Category and Priority will be null
+            var vm = new IssueCreateVm();
+            return View(vm);
         }
 
         // POST: /Issues/Create
@@ -29,49 +41,70 @@ namespace MunicipalServicesMVC.Controllers
         {
             if (!ModelState.IsValid)
             {
-                TempData["Engagement"] = "Almost there! Please fix the highlighted fields 👀";
+                // Light encouragement message for the user
+                TempData["Engagement"] = "Please fix the highlighted fields and try again.";
                 return View(vm);
             }
 
             string? virtualPath = null;
 
-            if (vm.Attachment is not null && vm.Attachment.Length > 0)
+            // Handle optional attachment
+            if (vm.Attachment != null && vm.Attachment.Length > 0)
             {
-                // Allow only common image/PDF types
-                var allowed = new[] { ".png", ".jpg", ".jpeg", ".gif", ".pdf" };
-                var ext = Path.GetExtension(vm.Attachment.FileName).ToLowerInvariant();
-                if (!allowed.Contains(ext))
+                try
                 {
-                    ModelState.AddModelError(nameof(vm.Attachment), "Only PNG, JPG, GIF or PDF allowed.");
-                    TempData["Engagement"] = "Oops! Unsupported file type. Try PNG/JPG/GIF/PDF.";
-                    return View(vm);
+                    var uploadsRoot = Path.Combine(_env.WebRootPath, "uploads");
+                    Directory.CreateDirectory(uploadsRoot);
+
+                    var originalName = Path.GetFileNameWithoutExtension(vm.Attachment.FileName);
+                    var ext = Path.GetExtension(vm.Attachment.FileName);
+                    var safeName = string.IsNullOrWhiteSpace(originalName)
+                        ? "attachment"
+                        : originalName.Replace(" ", "_");
+
+                    var fileName = $"{safeName}_{Guid.NewGuid():N}{ext}";
+                    var fullPath = Path.Combine(uploadsRoot, fileName);
+
+                    using (var stream = System.IO.File.Create(fullPath))
+                    {
+                        await vm.Attachment.CopyToAsync(stream);
+                    }
+
+                    // This is what we store on the Issue so it can be served from wwwroot
+                    virtualPath = $"/uploads/{fileName}";
                 }
-
-                var uploads = Path.Combine(_env.WebRootPath, "uploads");
-                Directory.CreateDirectory(uploads);
-
-                var safeName = $"{Guid.NewGuid():N}{ext}";
-                var fullPath = Path.Combine(uploads, safeName);
-                using (var fs = new FileStream(fullPath, FileMode.CreateNew))
+                catch (Exception ex)
                 {
-                    await vm.Attachment.CopyToAsync(fs);
+                    _logger.LogError(ex, "Error saving attachment");
+                    // We don’t fail the whole request, just log it
                 }
-
-                virtualPath = $"/uploads/{safeName}";
             }
 
+            // Generate the short 8-character reference ID that the user sees & searches with
+            var referenceId = Guid.NewGuid()
+                                  .ToString("N")
+                                  .Substring(0, 8)
+                                  .ToUpperInvariant();
+
+            // Map from view model to domain model
             var issue = new Issue
             {
-                Location = vm.Location.Trim(),
-                Category = vm.Category!.Value,
-                Description = vm.Description.Trim(),
-                AttachmentVirtualPath = virtualPath
+                Id = referenceId,
+                Location = vm.Location,
+                Category = vm.Category ?? IssueCategory.Other, // fallback if somehow null
+                Description = vm.Description,
+                AttachmentVirtualPath = virtualPath,
+                CreatedAt = DateTime.UtcNow,
+                Status = IssueStatus.Pending,                  // default when created
+                Priority = vm.Priority ?? 3                    // fallback to normal priority
             };
 
             _store.Add(issue);
 
-            TempData["Success"] = $"Your report has been logged. Ref: {issue.Id.Substring(0, 8).ToUpper()}";
-            TempData["Engagement"] = "Thank you for taking action! 🌟";
+            // Small friendly message for the next page
+            TempData["Engagement"] = "Thank you for reporting this issue.";
+
+            // Redirect to thank-you page with the same reference id
             return RedirectToAction(nameof(ThankYou), new { id = issue.Id });
         }
 
@@ -79,6 +112,7 @@ namespace MunicipalServicesMVC.Controllers
         [HttpGet]
         public IActionResult ThankYou(string id)
         {
+            // The view shows this id directly (already 8 characters, upper-case)
             ViewBag.IssueId = id;
             return View();
         }

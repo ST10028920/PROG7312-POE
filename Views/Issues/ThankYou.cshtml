@@ -19,8 +19,23 @@
         <div class="alert alert-success d-inline-block shadow-sm">
             <h6 class="mb-1">Your reference number:</h6>
             <div class="fw-bold fs-5 text-uppercase">
-                @(id?.Substring(0, 8).ToUpper())
+                <span id="referenceCode">
+                    @(id?.Substring(0, 8).ToUpper())
+                </span>
+                <button type="button"
+                        class="btn btn-sm btn-outline-secondary ms-2"
+                        onclick="copyReferenceCode()">
+                    Copy
+                </button>
             </div>
+
+            <p class="mt-3 mb-0">
+                <a asp-controller="ServiceRequests"
+                   asp-action="Index"
+                   class="btn btn-link text-decoration-none">
+                    🔍 View this request in Service Request Status
+                </a>
+            </p>
         </div>
 
         <div class="mt-4 d-flex flex-column flex-sm-row justify-content-center gap-2">
@@ -36,10 +51,11 @@
 
 <!-- ============================= -->
 <!-- Celebration Confetti Effect   -->
+<!-- + Copy Reference Script       -->
 <!-- ============================= -->
 @section Scripts {
     <script>
-        // Simple confetti burst 🎉
+        // Simple confetti burst
         document.addEventListener("DOMContentLoaded", () => {
             const colors = ["#198754", "#0d6efd", "#ffc107", "#dc3545"];
             for (let i = 0; i < 50; i++) {
@@ -52,5 +68,24 @@
                 setTimeout(() => confetti.remove(), 5000);
             }
         });
+
+        function copyReferenceCode() {
+            var el = document.getElementById("referenceCode");
+            if (!el) return;
+
+            var text = el.innerText || el.textContent;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text)
+                    .then(function () {
+                        alert("Reference ID copied: " + text);
+                    })
+                    .catch(function () {
+                        alert("Could not copy automatically. Please copy it manually.");
+                    });
+            } else {
+                alert("Copy is not supported in this browser. Please copy it manually: " + text);
+            }
+        }
     </script>
 }

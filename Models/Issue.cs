@@ -16,6 +16,17 @@ public enum IssueCategory
 }
 
 /// <summary>
+/// Status values for a municipal service issue.
+/// </summary>
+public enum IssueStatus
+{
+    Pending,
+    InProgress,
+    Resolved,
+    Escalated
+}
+
+/// <summary>
 /// Represents a municipal service issue reported by a citizen.
 /// </summary>
 public sealed class Issue
@@ -45,7 +56,7 @@ public sealed class Issue
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// For this is was Optional: relative path to an uploaded attachment (e.g., under wwwroot/uploads).
+    /// Optional: relative path to an uploaded attachment (e.g., under wwwroot/uploads).
     /// </summary>
     public string? AttachmentVirtualPath { get; set; }
 
@@ -54,4 +65,16 @@ public sealed class Issue
     /// </summary>
     [Required]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Current status of the issue (e.g. Pending, InProgress, Resolved, Escalated).
+    /// </summary>
+    [Required]
+    public IssueStatus Status { get; set; } = IssueStatus.Pending;
+
+    /// <summary>
+    /// Priority of the issue: 1 = highest, 5 = lowest.
+    /// </summary>
+    [Range(1, 5)]
+    public int Priority { get; set; } = 3;
 }
